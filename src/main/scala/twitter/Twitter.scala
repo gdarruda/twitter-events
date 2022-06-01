@@ -10,17 +10,16 @@ import scala.collection.JavaConverters._
 import java.time.OffsetTime
 import java.time.OffsetDateTime
 import com.typesafe.scalalogging.StrictLogging
+import com.twitter.clientlib.model.GenericTweetsTimelineResponseMeta
 
 class Twitter(bearerToken: String) extends StrictLogging {
 
   class APICaller[A] {
-  
     def callAPI(call: () => A, name: String) : Option[A] =
-
-      try {
+      try 
           logger.info(s"Calling API ($name)")
           Some(call())
-      } catch {
+      catch
         case e : ApiException => 
           logger.error(s"Exception when calling API ($name)")
           logger.error("Status code: " + e.getCode())
@@ -28,9 +27,8 @@ class Twitter(bearerToken: String) extends StrictLogging {
           logger.error("Response headers: " + e.getResponseHeaders())
           logger.error(e.getStackTrace().map(_.toString()).reduce(_ + _))
           None
-      }
   }
-
+  
   private lazy val apiInstance = {
     
     logger.info("Creating API Instance...")
@@ -68,24 +66,26 @@ class Twitter(bearerToken: String) extends StrictLogging {
                     pollFields: Set[String] = Set.empty[String]
                     ) = 
 
-    new APICaller[List[Tweet]].callAPI(
-      () => apiInstance
-              .tweets()
-              .usersIdTweets(userID, 
-                             sinceId.getOrElse(null), 
-                             untilId.getOrElse(null), 
-                             maxResults.getOrElse(null).asInstanceOf[Integer], 
-                             exclude.asJava, 
-                             paginationToken.getOrElse(null), 
-                             startTime.getOrElse(null), 
-                             endTime.getOrElse(null), 
-                             expansions.asJava, 
-                             tweetFields.asJava,
-                             userFields.asJava, 
-                             mediaFields.asJava,
-                             placeFields.asJava, 
-                             pollFields.asJava)
-      .getData().asScala.toList,
+    new APICaller[(List[Tweet], GenericTweetsTimelineResponseMeta)].callAPI(
+      () => 
+        val request = apiInstance
+          .tweets()
+          .usersIdTweets(userID, 
+                          sinceId.getOrElse(null), 
+                          untilId.getOrElse(null), 
+                          maxResults.getOrElse(null).asInstanceOf[Integer], 
+                          exclude.asJava, 
+                          paginationToken.getOrElse(null), 
+                          startTime.getOrElse(null), 
+                          endTime.getOrElse(null), 
+                          expansions.asJava, 
+                          tweetFields.asJava,
+                          userFields.asJava, 
+                          mediaFields.asJava,
+                          placeFields.asJava, 
+                          pollFields.asJava)
+        (request.getData().asScala.toList, request.getMeta())
+      ,
       "getUserTweets"
     )
     
