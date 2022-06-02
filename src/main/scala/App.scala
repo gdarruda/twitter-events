@@ -1,9 +1,14 @@
+import java.time.OffsetDateTime
+
 import scala.collection.JavaConverters._
+import scala.annotation.tailrec
+
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
-import java.time.OffsetDateTime
+
 import com.twitter.clientlib.model.{Tweet, User}
-import scala.annotation.tailrec
+
+import database.SQLite
 
 object App {
 
@@ -11,8 +16,6 @@ object App {
                      user: String,
                      startTime : Option[OffsetDateTime] = None,
                      sinceId : Option[String] = None) =
-    
-    val startTime = Some(OffsetDateTime.parse("2022-01-01T15:20:30+08:00"))
 
     @tailrec
     def walkTokens(user: User, 
@@ -31,7 +34,7 @@ object App {
 
     twitter.getUser(user) match 
         case Some(user) => walkTokens(user)
-        case None => Set()
+        case None => List.empty[Tweet]
   
 
   def main(args: Array[String]) : Unit = 
@@ -40,6 +43,7 @@ object App {
     val twitter = new Twitter(conf.getString("twitter.bearerToken"))
     val startTime = Some(OffsetDateTime.parse(conf.getString("twitter.startTime")))
 
-    println(loadUserTweets(twitter, "gdarruda", startTime = startTime))
+    // loadUserTweets(twitter, "gdarruda", startTime = startTime)
+    println(SQLite.loadProfile("gdarruda"))
 
 }
