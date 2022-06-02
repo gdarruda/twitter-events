@@ -38,8 +38,8 @@ object App {
     
     val conf = ConfigFactory.load()
     val twitter = new Twitter(conf.getString("twitter.bearerToken"))
-    val startTime = Some(OffsetDateTime.parse("2022-05-01T15:20:30+08:00"))
+    val startTime = Some(OffsetDateTime.parse(conf.getString("twitter.startTime")))
 
-    loadUserTweets(twitter, "gdarruda", startTime = startTime)
+    println(loadUserTweets(twitter, "gdarruda", startTime = startTime))
 
 }
