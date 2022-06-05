@@ -10,7 +10,12 @@ object SQLite {
     def loadProfiles = run(quote {query[Profile]})
     
     def loadProfile(name: String) = run(
-        quote  { query[Profile].filter(p => p.username == lift(name)) } 
+        quote {query[Profile].filter(p => p.username == lift(name))} 
     ) 
 
+    def updateProfile(profile: Profile) = run(
+        quote {query[Profile]
+                .filter(_.username == lift(profile.username))
+                .updateValue(lift(profile))}
+    )
 }

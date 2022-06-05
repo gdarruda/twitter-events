@@ -21,21 +21,39 @@ object App {
 
     val profiles = SQLite
       .loadProfiles
-      .map(profile => 
+      .map{profile => 
+        
         if profile.userId == null then
           TwitterService.loadUser(profile) match 
             case None => (false, None)
             case Some(user) => (true, Some(Profile(profile.username, user.getId, profile.sinceId)))
-        else (false, Some(profile)))
-      .map((needsUpdate, profile) => 
+        else 
+          (false, Some(profile))
+
+      }
+      .map{(needsUpdate, profile) => 
+        
         val tweets = profile match
           case Some(profile) => TwitterService.loadUserTweets(profile)
           case None => List.empty[Tweet]
-        (tweets.length > 0 || needsUpdate, tweets))
+        
+        (tweets.length > 0 || needsUpdate, tweets, profile)
+      }
     
     profiles
-    .flatMap(_._2)
-    .foreach(tweet => KafkaService.publish(conf.getString("kafka.topic.tweets"), tweet.toJson))
+      .flatMap(_._2)
+      .foreach(tweet => KafkaService.publish(conf.getString("kafka.topic.tweets"), tweet.toJson))
+
+    profiles
+      .filter(_._1)
+      .foreach{(_, tweets, profile) => 
+
+        val lastTweet = tweets.map(_.getId.toLong).max
+
+        SQLite.updateProfile(Profile(username = profile.get.username,
+                                     userId = profile.get.userId,
+                                     sinceId = lastTweet.toString))
+      }
 
     SQLite.ctx.close
     KafkaService.producer.close

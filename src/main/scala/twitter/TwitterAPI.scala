@@ -86,8 +86,12 @@ class TwitterAPI(bearerToken: String) extends StrictLogging {
                           mediaFields.asJava,
                           placeFields.asJava, 
                           pollFields.asJava)
-        (request.getData().asScala.toList, request.getMeta())
-      ,
+
+        val tweets = if request.getData() == null 
+                     then List.empty 
+                     else request.getData.asScala.toList
+        
+        (tweets, request.getMeta),
       "getUserTweets"
     )
     
