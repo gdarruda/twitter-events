@@ -6,44 +6,38 @@ import scala.annotation.tailrec
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
-import com.twitter.clientlib.model.{Tweet, User}
-
 import database.SQLite
+import twitter.TwitterService
+import database.Profile
+import com.twitter.clientlib.model.Tweet
 
 object App {
 
-  def loadUserTweets(twitter: Twitter, 
-                     user: String,
-                     startTime : Option[OffsetDateTime] = None,
-                     sinceId : Option[String] = None) =
-
-    @tailrec
-    def walkTokens(user: User, 
-                   tweetList: List[Tweet] = List.empty,
-                   token: Option[String] = None) : List[Tweet] = 
-      
-      twitter.getUserTweets(user.getId, paginationToken = token, startTime = startTime) match 
-        case Some((tweets, meta)) => 
-          
-          val nextToken = if meta.getNextToken == null then None else Some(meta.getNextToken)
-
-          if (meta.getNextToken() == null) tweetList
-          else walkTokens(user, tweetList = tweets ++ tweetList, token = nextToken) 
-
-        case None => tweetList
-
-    twitter.getUser(user) match 
-        case Some(user) => walkTokens(user)
-        case None => List.empty[Tweet]
-  
-
   def main(args: Array[String]) : Unit = 
     
-    val conf = ConfigFactory.load()
-    val twitter = new Twitter(conf.getString("twitter.bearerToken"))
-    val startTime = Some(OffsetDateTime.parse(conf.getString("twitter.startTime")))
+    val profiles = SQLite
+      .loadProfiles
+      .map(profile => 
+        if profile.userId == null then
+          TwitterService.loadUser(profile) match 
+            case None => (false, None)
+            case Some(user) => (true, Some(Profile(profile.username, user.getId, profile.sinceId)))
+        else (false, Some(profile)))
+      .map((needsUpdate, profile) => 
+        val tweets = profile match
+          case Some(profile) => TwitterService.loadUserTweets(profile)
+          case None => List.empty[Tweet]
+        (tweets.length > 0 || needsUpdate, tweets))
+    
+    // profiles
+    // profiles.filter(_._1).foreach(SQLite.)
 
-    // loadUserTweets(twitter, "gdarruda", startTime = startTime)
-    println(SQLite.loadProfile("gdarruda"))
+    // .flatMap(profile => TwitterService.loadUserTweets(profile, ))
+    // SQLite
+    //   .loadProfiles
+    //   .foreach(println)
+    //   .flatMap(profile => loadUserTweets(twitter, 
+    //                                      profile.username))
 
+    SQLite.ctx.close()
 }

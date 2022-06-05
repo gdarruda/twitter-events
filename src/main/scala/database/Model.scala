@@ -1,5 +1,5 @@
 package database
 
 case class Profile(username: String, 
-                   userId: String, 
+                   userId: String,
                    sinceId: String)

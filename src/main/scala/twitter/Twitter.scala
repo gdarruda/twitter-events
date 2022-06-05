@@ -1,3 +1,5 @@
+package twitter
+
 import com.twitter.clientlib.api.TwitterApi
 import com.twitter.clientlib.TwitterCredentialsOAuth2
 import com.twitter.clientlib.TwitterCredentialsBearer
@@ -12,7 +14,7 @@ import java.time.OffsetDateTime
 import com.typesafe.scalalogging.StrictLogging
 import com.twitter.clientlib.model.GenericTweetsTimelineResponseMeta
 
-class Twitter(bearerToken: String) extends StrictLogging {
+class TwitterAPI(bearerToken: String) extends StrictLogging {
 
   class APICaller[A] {
     def callAPI(call: () => A, name: String) : Option[A] =
