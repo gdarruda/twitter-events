@@ -6,15 +6,19 @@ import scala.annotation.tailrec
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
-import database.SQLite
 import twitter.TwitterService
-import database.Profile
 import com.twitter.clientlib.model.Tweet
+
+import database.Profile
+import database.SQLite
+import kafka.KafkaService
 
 object App {
 
   def main(args: Array[String]) : Unit = 
     
+    val conf = ConfigFactory.load()
+
     val profiles = SQLite
       .loadProfiles
       .map(profile => 
@@ -29,15 +33,11 @@ object App {
           case None => List.empty[Tweet]
         (tweets.length > 0 || needsUpdate, tweets))
     
-    // profiles
-    // profiles.filter(_._1).foreach(SQLite.)
+    profiles
+    .flatMap(_._2)
+    .foreach(tweet => KafkaService.publish(conf.getString("kafka.topic.tweets"), tweet.toJson))
 
-    // .flatMap(profile => TwitterService.loadUserTweets(profile, ))
-    // SQLite
-    //   .loadProfiles
-    //   .foreach(println)
-    //   .flatMap(profile => loadUserTweets(twitter, 
-    //                                      profile.username))
+    SQLite.ctx.close
+    KafkaService.producer.close
 
-    SQLite.ctx.close()
 }

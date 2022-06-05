@@ -7,3 +7,4 @@ project/
 target/
 
 .secrets.conf
+*.db
