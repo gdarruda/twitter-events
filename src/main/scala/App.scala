@@ -13,14 +13,15 @@ import database.Profile
 import database.SQLite
 import kafka.KafkaService
 
+import scala.collection.parallel.CollectionConverters.*
+
 object App {
 
   def main(args: Array[String]) : Unit = 
     
     val conf = ConfigFactory.load()
 
-    val profiles = SQLite
-      .loadProfiles
+    val profiles = SQLite.loadProfiles.par
       .map{profile => 
         
         if profile.userId == null then
@@ -42,7 +43,9 @@ object App {
     
     profiles
       .flatMap(_._2)
-      .foreach(tweet => KafkaService.publish(conf.getString("kafka.topic.tweets"), tweet.toJson))
+      .foreach{tweet => 
+        KafkaService.publish(conf.getString("kafka.topic.tweets"), tweet.toJson)
+      }
 
     profiles
       .filter(_._1)

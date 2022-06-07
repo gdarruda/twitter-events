@@ -10,5 +10,6 @@ lazy val root = (project in file("."))
     libraryDependencies += "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4",
     libraryDependencies += "org.xerial" % "sqlite-jdbc" % "3.28.0",
     libraryDependencies += "io.getquill" %% "quill-jdbc" % "3.17.0-Beta30-RC5",
-    libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.2.0"
+    libraryDependencies += "org.apache.kafka" % "kafka-clients" % "3.2.0",
+    libraryDependencies += "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
   )

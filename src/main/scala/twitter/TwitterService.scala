@@ -30,6 +30,7 @@ object TwitterService {
             twitter.getUserTweets(profile.userId, 
                                   paginationToken = token,
                                   startTime = startTime,
+                                  tweetFields = Set("id", "created_at", "text", "author_id"),
                                   sinceId = sinceId) match 
                 case Some((tweets, meta)) => 
                 

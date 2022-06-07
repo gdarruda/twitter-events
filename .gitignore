@@ -3,8 +3,13 @@
 .metals/
 .vscode/
 
+src/main/resources/kafka-data/
+src/main/resources/zk-data/
+src/main/resources/zk-txn-logs/
+
 project/
 target/
 
 .secrets.conf
 *.db
+
