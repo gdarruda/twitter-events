@@ -18,6 +18,6 @@ object KafkaService {
     lazy val producer = new KafkaProducer[String, String](props)
 
     def publish(topic: String, message: String) = 
-        producer.send(new ProducerRecord[String, String](topic, topic, message))
+        producer.send(new ProducerRecord[String, String](topic, null, message))
     
 }
